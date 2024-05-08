@@ -1,2 +1,8 @@
-# restr
-Nostr REST API Proxy
+```
+npm install
+npm run dev
+```
+
+```
+npm run deploy
+```
