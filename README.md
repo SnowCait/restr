@@ -1,5 +1,7 @@
 # Restr
 
+Nostr REST API proxy.
+
 ## Usage
 
 Access `http://127.0.0.1:8787/<nevent>`.\
