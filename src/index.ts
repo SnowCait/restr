@@ -64,6 +64,8 @@ async function fetchEvent(
   } catch (error) {
     console.error(error);
     return undefined;
+  } finally {
+    rxNostr.dispose();
   }
 }
 
