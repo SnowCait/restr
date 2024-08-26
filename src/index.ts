@@ -2,7 +2,7 @@ import { Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { nip19 } from "nostr-tools";
 import { Event } from "nostr-typedef";
-import { createRxBackwardReq, createRxNostr } from "rx-nostr";
+import { createRxBackwardReq, createRxNostr, LazyFilter } from "rx-nostr";
 import { verifier } from "rx-nostr-crypto";
 import { firstValueFrom } from "rxjs";
 
@@ -37,18 +37,8 @@ app.get(
       throw new HTTPException(400);
     }
 
-    const rxNostr = createRxNostr({ verifier, eoseTimeout: 3000 });
-    rxNostr.setDefaultRelays(relays);
-    const req = createRxBackwardReq();
-    const promise = firstValueFrom(rxNostr.use(req));
-    req.emit([{ ids: [id] }]);
-    req.over();
-    let event: Event | undefined;
-    try {
-      const packet = await promise;
-      event = packet.event;
-    } catch (error) {
-      console.error(error);
+    const event = await fetchEvent(relays, { ids: [id] });
+    if (event === undefined) {
       throw new HTTPException(404);
     }
 
@@ -57,5 +47,24 @@ app.get(
     return response;
   },
 );
+
+async function fetchEvent(
+  relays: string[],
+  filter: LazyFilter,
+): Promise<Event | undefined> {
+  const rxNostr = createRxNostr({ verifier, eoseTimeout: 3000 });
+  rxNostr.setDefaultRelays(relays);
+  const req = createRxBackwardReq();
+  const promise = firstValueFrom(rxNostr.use(req));
+  req.emit([filter]);
+  req.over();
+  try {
+    const packet = await promise;
+    return packet.event;
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+}
 
 export default app;
