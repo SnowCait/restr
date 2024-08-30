@@ -15,6 +15,15 @@ npm install
 npm run dev
 ```
 
+## Test
+
+```
+cd test/
+docker compose up --build -d --wait
+npm test
+docker compose down --volumes
+```
+
 ## Deploy
 
 ```
