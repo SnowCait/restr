@@ -4,9 +4,18 @@ Nostr REST API proxy.
 
 ## Usage
 
-Access `http://127.0.0.1:8787/<nevent>`.\
+### GET `http://127.0.0.1:8787/<nevent|naddr|nprofile>`
+
+`<nevent|naddr|nprofile>` is
+[NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md) and requires
+**id** and **relays**.
+
+### POST `http://127.0.0.1:8787/<nevent>`
+
 `<nevent>` is [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
-and requires **id** and **relays**.
+and requires **relays**.
+
+Request body is event json.
 
 ## Development
 

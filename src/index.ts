@@ -9,12 +9,13 @@ import {
   LazyFilter,
   uniq,
 } from "rx-nostr";
-import { verifier } from "rx-nostr-crypto";
+import { verifier, verify } from "rx-nostr-crypto";
 import { firstValueFrom, lastValueFrom } from "rxjs";
 
 const app = new Hono();
 const cache = caches.default;
 const eoseTimeout = 3000;
+const okTimeout = 3000;
 
 app.get(
   "/:nevent{nevent1[0-9a-z]{6,}}",
@@ -149,6 +150,48 @@ app.get(
   },
 );
 
+app.post(
+  "/:nevent{nevent1[0-9a-z]{6,}}",
+  async (context: Context): Promise<Response> => {
+    const nevent = context.req.param("nevent");
+    let pointer: nip19.EventPointer;
+    try {
+      const { type, data } = nip19.decode(nevent);
+      if (type !== "nevent") {
+        console.error("Logic error");
+        throw new Error();
+      }
+      pointer = data;
+    } catch (error) {
+      console.error(error);
+      throw new HTTPException(400);
+    }
+
+    const { relays } = pointer;
+    if (relays === undefined || relays.length === 0) {
+      console.error("Relays not found");
+      throw new HTTPException(400);
+    }
+
+    let event: Event | undefined;
+    try {
+      event = await context.req.json<Event>();
+    } catch (error) {
+      console.error("JSON parse error");
+      throw new HTTPException(400);
+    }
+
+    if (!verify(event)) {
+      console.error("Invalid event");
+      throw new HTTPException(400);
+    }
+
+    const result = await send(relays, event);
+
+    return context.json(Object.fromEntries(result));
+  },
+);
+
 async function fetchFirstEvent(
   relays: string[],
   filter: LazyFilter,
@@ -189,6 +232,23 @@ async function fetchLastEvent(
   } finally {
     rxNostr.dispose();
   }
+}
+
+async function send(
+  relays: string[],
+  event: Event,
+): Promise<Map<string, boolean>> {
+  const { promise, resolve } = Promise.withResolvers<Map<string, boolean>>();
+  const rxNostr = createRxNostr({ verifier, okTimeout });
+  const result = new Map<string, boolean>();
+  rxNostr.setDefaultRelays(relays);
+  rxNostr
+    .send(event, { completeOn: "all-ok", errorOnTimeout: false })
+    .subscribe({
+      next: ({ from, ok }) => result.set(from, ok),
+      complete: () => resolve(result),
+    });
+  return promise;
 }
 
 export default app;
