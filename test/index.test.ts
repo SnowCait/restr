@@ -1,5 +1,11 @@
 import { assert, beforeAll, expect, test } from "vitest";
-import { Event, finalizeEvent, generateSecretKey, nip19, Relay } from "nostr-tools";
+import {
+  Event,
+  finalizeEvent,
+  generateSecretKey,
+  nip19,
+  Relay,
+} from "nostr-tools";
 import worker from "../src";
 
 const relayUrl = "ws://localhost:7777/";
