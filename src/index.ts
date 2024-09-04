@@ -50,7 +50,9 @@ app.get(
     }
 
     const response = context.json(event);
-    await cache.put(context.req.raw, response.clone());
+    context.executionCtx.waitUntil(
+      cache.put(context.req.raw, response.clone()),
+    );
     return response;
   },
 );
@@ -96,7 +98,9 @@ app.get(
     }
 
     const response = context.json(event);
-    await cache.put(context.req.raw, response.clone());
+    context.executionCtx.waitUntil(
+      cache.put(context.req.raw, response.clone()),
+    );
     return response;
   },
 );
@@ -138,7 +142,9 @@ app.get(
     }
 
     const response = context.json(event);
-    await cache.put(context.req.raw, response.clone());
+    context.executionCtx.waitUntil(
+      cache.put(context.req.raw, response.clone()),
+    );
     return response;
   },
 );
