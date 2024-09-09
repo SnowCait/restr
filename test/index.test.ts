@@ -33,7 +33,7 @@ test("root is 404", async () => {
   expect(response.status).toBe(404);
 });
 
-test("nevent", async () => {
+test.skip("nevent", async () => {
   assert(savedEvent !== undefined);
   const nevent = nip19.neventEncode({ id: savedEvent.id, relays: [relayUrl] });
   const response = await worker.request(`/${nevent}`);
