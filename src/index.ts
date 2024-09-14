@@ -1,7 +1,8 @@
 import { Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { streamSSE } from "hono/streaming";
 import { kinds, nip19 } from "nostr-tools";
-import { Event } from "nostr-typedef";
+import { Event, Filter } from "nostr-typedef";
 import {
   createRxBackwardReq,
   createRxNostr,
@@ -149,6 +150,55 @@ app.get(
     return response;
   },
 );
+
+app.post("/req", async (context: Context): Promise<Response> => {
+  let params: { relays?: string[]; filters?: Filter[] };
+  try {
+    params = await context.req.json();
+  } catch (error) {
+    console.error("JSON parse error", error);
+    throw new HTTPException(400);
+  }
+  if (params.relays === undefined || params.relays.length === 0) {
+    console.error("Relays not found");
+    throw new HTTPException(400);
+  }
+  if (params.filters === undefined || params.filters.length === 0) {
+    console.error("Filters not found");
+    throw new HTTPException(400);
+  }
+  console.log("[params]", params);
+
+  const { relays, filters } = params;
+  return streamSSE(context, (stream): Promise<void> => {
+    const rxNostr = createRxNostr({ verifier, eoseTimeout });
+    rxNostr.setDefaultRelays(relays);
+    const req = createRxBackwardReq();
+    const { promise, resolve } = Promise.withResolvers<void>();
+    rxNostr
+      .use(req)
+      .pipe(uniq())
+      .subscribe({
+        next: async ({ event }) => {
+          await stream.writeSSE({
+            data: JSON.stringify(event),
+          });
+        },
+        complete: () => {
+          rxNostr.dispose();
+          resolve();
+        },
+        error: (error) => {
+          console.error(error);
+          rxNostr.dispose();
+          resolve();
+        },
+      });
+    req.emit(filters);
+    req.over();
+    return promise;
+  });
+});
 
 app.post(
   "/:nevent{nevent1[0-9a-z]{6,}}",
