@@ -246,7 +246,10 @@ async function send(
     .send(event, { completeOn: "all-ok", errorOnTimeout: false })
     .subscribe({
       next: ({ from, ok }) => result.set(from, ok),
-      complete: () => resolve(result),
+      complete: () => {
+        rxNostr.dispose();
+        resolve(result);
+      },
     });
   return promise;
 }
