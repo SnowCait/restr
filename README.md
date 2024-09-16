@@ -2,38 +2,57 @@
 
 Nostr REST API proxy on Cloudflare Workers.
 
+Client implementation is simplified by having proxy server handle communication
+with relays.\
+It also reduces the amount of communication on client.
+
 ## Usage
 
-### GET `http://127.0.0.1:8787/<nevent>`
+### GET `/{nevent}`
 
-`<nevent>` is [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
+`{nevent}` is [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
 and requires **id** and **relays**.
 
-### GET `http://127.0.0.1:8787/<naddr>`
+### GET `/{naddr}`
 
-`<naddr>` is [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
+`{naddr}` is [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
 and requires **kind**, **pubkey**, **identifier** and **relays**.
 
-### GET `http://127.0.0.1:8787/<nprofile>`
+### GET `/{nprofile}`
 
-`<nprofile>` is
+`{nprofile}` is
 [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md) and requires
 **pubkey** and **relays**.
 
 This is an alias of naddr with kind 0 and empty identifier.
 
-### POST `http://127.0.0.1:8787/<nevent>`
+### POST `/{nevent}`
 
-`<nevent>` is [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
+`{nevent}` is [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
 and requires **relays**.
 
 Request body is event JSON.
 
-### POST `http://127.0.0.1:8787/req`
+### POST `/req`
+
+Fetch events.\
+POST method is used because filters can be long.
+
+Request body contains relays and filters.
+
+```json
+{
+  "relays": ["wss://example.com/"],
+  "filters": [{ "limit": 10 }]
+}
+```
+
+### POST `/req/stream`
 
 This is
 [Server-Sent Events](https://developer.mozilla.org/docs/Web/API/Server-sent_events)
 with POST method.\
+POST method is used because filters can be long.\
 Use a library which can handle POST method
 ([sse.js](https://www.npmjs.com/package/sse.js),
 [launchdarkly-eventsource](https://www.npmjs.com/package/launchdarkly-eventsource),
