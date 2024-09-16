@@ -41,3 +41,22 @@ test.skip("nevent", async () => {
   expect(response.status).toBe(200);
   expect(event.id).toBe(savedEvent.id);
 });
+
+test("req", async () => {
+  assert(savedEvent !== undefined);
+  const response = await worker.request("/req", {
+    method: "POST",
+    body: JSON.stringify({
+      relays: [relayUrl],
+      filters: [
+        {
+          limit: 1,
+        },
+      ],
+    }),
+  });
+  const events = (await response.json()) satisfies Event[];
+  expect(response.status).toBe(200);
+  expect(events.length).toBe(1);
+  expect(events[0].id).toBe(savedEvent.id);
+});
