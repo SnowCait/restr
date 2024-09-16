@@ -152,24 +152,41 @@ app.get(
 );
 
 app.post("/req", async (context: Context): Promise<Response> => {
-  let params: { relays?: string[]; filters?: Filter[] };
-  try {
-    params = await context.req.json();
-  } catch (error) {
-    console.error("JSON parse error", error);
-    throw new HTTPException(400);
-  }
-  if (params.relays === undefined || params.relays.length === 0) {
-    console.error("Relays not found");
-    throw new HTTPException(400);
-  }
-  if (params.filters === undefined || params.filters.length === 0) {
-    console.error("Filters not found");
-    throw new HTTPException(400);
-  }
-  console.log("[params]", params);
+  const { relays, filters } = await retrieveReqParams(context);
+  const rxNostr = createRxNostr({ verifier, eoseTimeout });
+  rxNostr.setDefaultRelays(relays);
+  const req = createRxBackwardReq();
+  const { promise, resolve } = Promise.withResolvers<void>();
+  const events: Event[] = [];
+  rxNostr
+    .use(req)
+    .pipe(uniq())
+    .subscribe({
+      next: async ({ event }) => {
+        events.push(event);
+      },
+      complete: () => {
+        rxNostr.dispose();
+        resolve();
+      },
+      error: (error) => {
+        console.error(error);
+        rxNostr.dispose();
+        resolve();
+      },
+    });
+  req.emit(filters);
+  req.over();
+  await promise;
+  return context.json(
+    events
+      .toSorted(reverseChronological)
+      .slice(0, filters[0].limit ?? Infinity),
+  );
+});
 
-  const { relays, filters } = params;
+app.post("/req/stream", async (context: Context): Promise<Response> => {
+  const { relays, filters } = await retrieveReqParams(context);
   return streamSSE(context, (stream): Promise<void> => {
     const rxNostr = createRxNostr({ verifier, eoseTimeout });
     rxNostr.setDefaultRelays(relays);
@@ -227,7 +244,7 @@ app.post(
     try {
       event = await context.req.json<Event>();
     } catch (error) {
-      console.error("JSON parse error");
+      console.error("JSON parse error", error);
       throw new HTTPException(400);
     }
 
@@ -241,6 +258,33 @@ app.post(
     return context.json(Object.fromEntries(result));
   },
 );
+
+async function retrieveReqParams(
+  context: Context,
+): Promise<{ relays: string[]; filters: Filter[] }> {
+  let params: { relays?: string[]; filters?: Filter[] };
+  try {
+    params = await context.req.json();
+  } catch (error) {
+    console.error("JSON parse error", error);
+    throw new HTTPException(400);
+  }
+  if (params.relays === undefined || params.relays.length === 0) {
+    console.error("Relays not found");
+    throw new HTTPException(400);
+  }
+  if (params.filters === undefined || params.filters.length === 0) {
+    console.error("Filters not found");
+    throw new HTTPException(400);
+  }
+  console.log("[params]", params);
+
+  return params as { relays: string[]; filters: Filter[] };
+}
+
+function reverseChronological(x: Event, y: Event): number {
+  return y.created_at - x.created_at;
+}
 
 async function fetchFirstEvent(
   relays: string[],
