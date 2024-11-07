@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno serve --port 3000 --allow-net --watch src/index.ts",
+    "serve": "deno serve --port 3000 --allow-net src/index.ts"
+  },
+  "compilerOptions": {
+    "noErrorTruncation": true
+  }
+}

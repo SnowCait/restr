@@ -1,5 +1,6 @@
 import { Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { cache } from "hono/cache";
 import { streamSSE } from "hono/streaming";
 import { kinds, nip19 } from "nostr-tools";
 import { Event, Filter } from "nostr-typedef";
@@ -14,18 +15,21 @@ import { verifier, verify } from "rx-nostr-crypto";
 import { firstValueFrom, lastValueFrom } from "rxjs";
 
 const app = new Hono();
-const cache = caches.default;
 const eoseTimeout = 3000;
 const okTimeout = 3000;
 
+const cacheOptions = {
+  cacheName: "restr-v0",
+  cacheControl: "max-age=3600",
+  wait: false,
+};
+if (globalThis.navigator?.userAgent !== "Cloudflare-Workers")
+  cacheOptions.wait = true;
+
 app.get(
   "/:nevent{nevent1[0-9a-z]{6,}}",
+  cache(cacheOptions),
   async (context: Context): Promise<Response> => {
-    const cachedResponse = await cache.match(context.req.raw);
-    if (cachedResponse !== undefined) {
-      return cachedResponse;
-    }
-
     const nevent = context.req.param("nevent");
     let pointer: nip19.EventPointer;
     try {
@@ -51,22 +55,14 @@ app.get(
       throw new HTTPException(404);
     }
 
-    const response = context.json(event);
-    context.executionCtx.waitUntil(
-      cache.put(context.req.raw, response.clone()),
-    );
-    return response;
+    return context.json(event);
   },
 );
 
 app.get(
   "/:naddr{naddr1[0-9a-z]{6,}}",
+  cache(cacheOptions),
   async (context: Context): Promise<Response> => {
-    const cachedResponse = await cache.match(context.req.raw);
-    if (cachedResponse !== undefined) {
-      return cachedResponse;
-    }
-
     const naddr = context.req.param("naddr");
     let pointer: nip19.AddressPointer;
     try {
@@ -99,22 +95,14 @@ app.get(
       throw new HTTPException(404);
     }
 
-    const response = context.json(event);
-    context.executionCtx.waitUntil(
-      cache.put(context.req.raw, response.clone()),
-    );
-    return response;
+    return context.json(event);
   },
 );
 
 app.get(
   "/:nprofile{nprofile1[0-9a-z]{6,}}",
+  cache(cacheOptions),
   async (context: Context): Promise<Response> => {
-    const cachedResponse = await cache.match(context.req.raw);
-    if (cachedResponse !== undefined) {
-      return cachedResponse;
-    }
-
     const nprofile = context.req.param("nprofile");
     let pointer: nip19.ProfilePointer;
     try {
@@ -143,11 +131,7 @@ app.get(
       throw new HTTPException(404);
     }
 
-    const response = context.json(event);
-    context.executionCtx.waitUntil(
-      cache.put(context.req.raw, response.clone()),
-    );
-    return response;
+    return context.json(event);
   },
 );
 

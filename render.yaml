@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: restr
+    runtime: docker
+    dockerfilePath: ./contrib/deno/Dockerfile
+    numInstances: 1
+    region: singapore
+    plan: free
