@@ -1,5 +1,5 @@
 services:
   restr:
     build:
-      context: ../../
+      context: .
       dockerfile: Dockerfile
