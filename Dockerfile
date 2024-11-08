@@ -5,5 +5,5 @@ COPY --chown=deno . .
 RUN deno install
 
 USER deno
-EXPOSE 3000
-CMD ["serve", "--port", "3000", "--allow-net", "src/index.ts"]
+EXPOSE 8000
+CMD ["serve", "--allow-net", "src/index.ts"]
