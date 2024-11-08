@@ -2,4 +2,4 @@ services:
   restr:
     build:
       context: ../../
-      dockerfile: contrib/deno/Dockerfile
+      dockerfile: Dockerfile
