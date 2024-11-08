@@ -19,12 +19,9 @@ const eoseTimeout = 3000;
 const okTimeout = 3000;
 
 const cacheOptions = {
-  cacheName: "restr-v0",
-  cacheControl: "max-age=3600",
-  wait: false,
+  cacheName: "restr",
+  wait: globalThis.navigator?.userAgent !== "Cloudflare-Workers",
 };
-if (globalThis.navigator?.userAgent !== "Cloudflare-Workers")
-  cacheOptions.wait = true;
 
 app.get(
   "/:nevent{nevent1[0-9a-z]{6,}}",

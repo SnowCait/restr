@@ -1,9 +1,7 @@
 name: Deploy
 on:
   push:
-    branches: deno
-  pull_request:
-    branches: deno
+    branches: main
 
 jobs:
   deploy:
@@ -17,16 +15,6 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
-
-      - name: Install Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
