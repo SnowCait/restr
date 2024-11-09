@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno serve --allow-net --watch src/index.ts",
+    "serve": "deno serve --allow-net src/index.ts"
+  },
+  "compilerOptions": {
+    "noErrorTruncation": true
+  }
+}

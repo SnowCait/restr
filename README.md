@@ -1,6 +1,6 @@
 # Restr
 
-Nostr REST API proxy on Cloudflare Workers.
+Nostr REST API proxy.
 
 Client implementation is simplified by having proxy server handle communication
 with relays.\
@@ -72,14 +72,14 @@ Request body contains relays and filters.
 
 ## Development
 
-```
+```shell
 npm install
 npm run dev
 ```
 
 ## Test
 
-```
+```shell
 cd test/
 docker compose up --build -d --wait
 npm test
@@ -88,6 +88,41 @@ docker compose down --volumes
 
 ## Deploy
 
-```
+### Cloudflare Workers
+
+#### With Git integration
+
+See [Document](https://developers.cloudflare.com/workers/ci-cd/builds/).
+
+#### With Wrangler
+
+```shell
 npm run deploy
 ```
+
+### Deno Deploy
+
+#### With GitHub integration
+
+See [Document](https://docs.deno.com/deploy/manual/how-to-deploy/).
+
+#### With deployctl
+
+See [Document](https://docs.deno.com/deploy/manual/deployctl/).
+
+An example workflow of GitHub Actions is
+[here](.github/workflows/deno-deploy.yml.example).
+
+### Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+### Docker
+
+#### With Docker Compose
+
+```shell
+docker compose up
+```
+
+The origin is `http://localhost:8000`.
