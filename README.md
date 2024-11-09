@@ -124,3 +124,5 @@ An example workflow of GitHub Actions is
 ```shell
 docker compose up
 ```
+
+The origin is `http://localhost:8000`.
