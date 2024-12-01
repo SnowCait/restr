@@ -1,4 +1,4 @@
-FROM denoland/deno:2.0.6
+FROM denoland/deno:2.1.2
 
 WORKDIR /app
 COPY --chown=deno . .
