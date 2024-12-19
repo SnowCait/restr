@@ -4,6 +4,7 @@ name = "restr"
 
 [observability]
 enabled = true
+head_sampling_rate = 0.1
 
 # [vars]
 # MY_VAR = "my-variable"
