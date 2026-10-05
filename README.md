@@ -1,5 +1,7 @@
 # Restr
 
+[![Deploy to Railyard](https://app.railyard.run/deploy/badge)](https://app.railyard.run/deploy?repo=https://github.com/SnowCait/restr)
+
 Nostr REST API proxy.
 
 Client implementation is simplified by having proxy server handle communication
